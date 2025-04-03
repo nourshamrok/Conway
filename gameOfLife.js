@@ -1,18 +1,11 @@
-// Define the size of the grid (can be adjusted) 1. הגדרת מידות הגריד
-var gridWidth = 10;
-var gridHeight = 10;
-// Initialize the grid with random cells (0 = dead, 1 = alive) 1.  פונקציה createGrid - יצירת גריד התחלתי
-var createGrid = function () {
-    var grid = [];
-    for (var i = 0; i < gridHeight; i++) {
-        var row = [];
-        for (var j = 0; j < gridWidth; j++) {
-            row.push(Math.floor(Math.random() * 2)); // Random 0 or 1
-        }
-        grid.push(row);
-    }
-    return grid;
-};
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var readline = require("readline");
+// יצירת ממשק לקריאת קלט מהמשתמש
+var rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+});
 // Print the grid to the console הדפסת הגריד לקונסולה
 var printGrid = function (grid) {
     console.clear();
@@ -31,9 +24,9 @@ var getLiveNeighbors = function (grid, row, col) {
             var newRow = row + i;
             var newCol = col + j;
             if (newRow >= 0 &&
-                newRow < gridHeight &&
+                newRow < grid.length &&
                 newCol >= 0 &&
-                newCol < gridWidth) {
+                newCol < grid[0].length) {
                 liveNeighbors += grid[newRow][newCol];
             }
         }
@@ -66,8 +59,7 @@ var createBlinker = function () {
     return board;
 };
 // Run the game
-var runGame = function (iterations, checkRules) {
-    var grid = checkRules ? createBlinker() : createGrid();
+var runGame = function (iterations, grid) {
     printGrid(grid);
     for (var i = 0; i < iterations; i++) {
         grid = nextGeneration(grid);
@@ -78,8 +70,62 @@ var runGame = function (iterations, checkRules) {
         while (Date.now() - now < delay) { } // Blocking delay to slow down the output
     }
 };
+function askDimensions() {
+    return new Promise(function (resolve, reject) {
+        rl.question("Enter the number of rows: ", function (rows) {
+            rl.question("Enter the number of columns: ", function (columns) {
+                var numRows = parseInt(rows);
+                var numColumns = parseInt(columns);
+                // יצירת מערך דו-ממדי בגודל שנבחר
+                var array = Array.from({ length: numRows }, function () {
+                    return Array(numColumns).fill(0);
+                });
+                // קריאה לפונקציה להכניס ערכים לכל תא במערך
+                askArrayValues(array, 0, 0)
+                    .then(function () {
+                    resolve(array); // החזרת המערך אחרי שסיימנו עם כל הקלט
+                })
+                    .catch(function (error) {
+                    reject(error); // טיפול בשגיאות
+                });
+            });
+        });
+    });
+}
+// פונקציה לבקש ערכים מהמשתמש לכל תא במערך
+function askArrayValues(array, row, col) {
+    return new Promise(function (resolve, reject) {
+        if (row < array.length) {
+            if (col < array[row].length) {
+                rl.question("Enter value for cell [".concat(row, ", ").concat(col, "]: "), function (value) {
+                    array[row][col] = parseInt(value); // שמירת הערך במערך
+                    askArrayValues(array, row, col + 1)
+                        .then(resolve)
+                        .catch(reject); // המשך לעמודה הבאה
+                });
+            }
+            else {
+                askArrayValues(array, row + 1, 0)
+                    .then(resolve)
+                    .catch(reject); // המעבר לשורה הבאה
+            }
+        }
+        else {
+            // כאשר כל הקלט הושלם
+            resolve();
+        }
+    });
+}
 // Run the game for 20 iterations
 console.log("check rules with blinker");
-runGame(20, true);
-console.log("new random grid");
-runGame(20, false);
+runGame(20, createBlinker());
+console.log("read custom input");
+askDimensions()
+    .then(function (array) {
+    rl.close();
+    console.log("Final array:");
+    runGame(20, array);
+})
+    .catch(function (error) {
+    rl.close();
+});

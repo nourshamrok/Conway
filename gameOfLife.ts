@@ -1,19 +1,13 @@
-// Define the size of the grid (can be adjusted) 1. הגדרת מידות הגריד
-const gridWidth = 10;
-const gridHeight = 10;
+import * as readline from "readline";
 
-// Initialize the grid with random cells (0 = dead, 1 = alive) 1.  פונקציה createGrid - יצירת גריד התחלתי
-const createGrid = (): number[][] => {
-  const grid = [];
-  for (let i = 0; i < gridHeight; i++) {
-    const row = [];
-    for (let j = 0; j < gridWidth; j++) {
-      row.push(Math.floor(Math.random() * 2)); // Random 0 or 1
-    }
-    grid.push(row);
-  }
-  return grid;
-};
+// יצירת ממשק לקריאת קלט מהמשתמש
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+// טיפוס עבור מערך דו-ממדי של מספרים
+type Matrix = number[][];
 
 // Print the grid to the console הדפסת הגריד לקונסולה
 const printGrid = (grid: number[][]): void => {
@@ -38,9 +32,9 @@ const getLiveNeighbors = (
       const newCol = col + j;
       if (
         newRow >= 0 &&
-        newRow < gridHeight &&
+        newRow < grid.length &&
         newCol >= 0 &&
-        newCol < gridWidth
+        newCol < grid[0].length
       ) {
         liveNeighbors += grid[newRow][newCol];
       }
@@ -79,8 +73,7 @@ const createBlinker = () => {
 };
 
 // Run the game
-const runGame = (iterations: number, checkRules: boolean): void => {
-  let grid = checkRules ? createBlinker() : createGrid();
+const runGame = (iterations: number, grid: number[][]): void => {
   printGrid(grid);
 
   for (let i = 0; i < iterations; i++) {
@@ -93,8 +86,71 @@ const runGame = (iterations: number, checkRules: boolean): void => {
   }
 };
 
+function askDimensions(): Promise<Matrix> {
+  return new Promise((resolve, reject) => {
+    rl.question("Enter the number of rows: ", (rows: string) => {
+      rl.question("Enter the number of columns: ", (columns: string) => {
+        const numRows: number = parseInt(rows);
+        const numColumns: number = parseInt(columns);
+
+        // יצירת מערך דו-ממדי בגודל שנבחר
+        let array: Matrix = Array.from({ length: numRows }, () =>
+          Array(numColumns).fill(0)
+        );
+
+        // קריאה לפונקציה להכניס ערכים לכל תא במערך
+        askArrayValues(array, 0, 0)
+          .then(() => {
+            resolve(array); // החזרת המערך אחרי שסיימנו עם כל הקלט
+          })
+          .catch((error) => {
+            reject(error); // טיפול בשגיאות
+          });
+      });
+    });
+  });
+}
+
+// פונקציה לבקש ערכים מהמשתמש לכל תא במערך
+function askArrayValues(
+  array: Matrix,
+  row: number,
+  col: number
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (row < array.length) {
+      if (col < array[row].length) {
+        rl.question(
+          `Enter value for cell [${row}, ${col}]: `,
+          (value: string) => {
+            array[row][col] = parseInt(value); // שמירת הערך במערך
+            askArrayValues(array, row, col + 1)
+              .then(resolve)
+              .catch(reject); // המשך לעמודה הבאה
+          }
+        );
+      } else {
+        askArrayValues(array, row + 1, 0)
+          .then(resolve)
+          .catch(reject); // המעבר לשורה הבאה
+      }
+    } else {
+      // כאשר כל הקלט הושלם
+      resolve();
+    }
+  });
+}
+
 // Run the game for 20 iterations
 console.log("check rules with blinker");
-runGame(20, true);
-console.log("new random grid");
-runGame(20, false);
+runGame(20, createBlinker());
+console.log("read custom input");
+askDimensions()
+  .then((array) => {
+    rl.close();
+    console.log("Final array:");
+    runGame(20, array);
+  })
+  .catch((error) => {
+    rl.close();
+  });
