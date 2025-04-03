@@ -1,0 +1,12 @@
+# Node.js dependencies
+node_modules/
+
+# Optional: Ignore the build directory (if you have one)
+dist/
+
+# Optional: Ignore TypeScript build info files
+*.tsbuildinfo
+
+# Optional: Ignore logs and environment files
+*.log
+.env
