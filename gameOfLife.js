@@ -57,9 +57,17 @@ var nextGeneration = function (grid) {
     });
     return newGrid;
 };
+var createBlinker = function () {
+    var board = Array.from({ length: 10 }, function () { return Array(10).fill(0); });
+    // הצבת התבנית "Blinker" (קו אנכי של 1 במרכז)
+    board[4][4] = 1;
+    board[5][4] = 1;
+    board[6][4] = 1;
+    return board;
+};
 // Run the game
-var runGame = function (iterations) {
-    var grid = createGrid();
+var runGame = function (iterations, checkRules) {
+    var grid = checkRules ? createBlinker() : createGrid();
     printGrid(grid);
     for (var i = 0; i < iterations; i++) {
         grid = nextGeneration(grid);
@@ -71,4 +79,7 @@ var runGame = function (iterations) {
     }
 };
 // Run the game for 20 iterations
-runGame(20);
+console.log("check rules with blinker");
+runGame(20, true);
+console.log("new random grid");
+runGame(20, false);

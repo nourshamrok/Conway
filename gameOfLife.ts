@@ -67,9 +67,20 @@ const nextGeneration = (grid: number[][]): number[][] => {
   return newGrid;
 };
 
+const createBlinker = () => {
+  let board = Array.from({ length: 10 }, () => Array(10).fill(0));
+
+  // הצבת התבנית "Blinker" (קו אנכי של 1 במרכז)
+  board[4][4] = 1;
+  board[5][4] = 1;
+  board[6][4] = 1;
+
+  return board;
+};
+
 // Run the game
-const runGame = (iterations: number): void => {
-  let grid = createGrid();
+const runGame = (iterations: number, checkRules: boolean): void => {
+  let grid = checkRules ? createBlinker() : createGrid();
   printGrid(grid);
 
   for (let i = 0; i < iterations; i++) {
@@ -83,4 +94,7 @@ const runGame = (iterations: number): void => {
 };
 
 // Run the game for 20 iterations
-runGame(20);
+console.log("check rules with blinker");
+runGame(20, true);
+console.log("new random grid");
+runGame(20, false);
