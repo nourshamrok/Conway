@@ -1,7 +1,7 @@
-// Define the size of the grid (can be adjusted)
+// Define the size of the grid (can be adjusted) 1. הגדרת מידות הגריד
 var gridWidth = 10;
 var gridHeight = 10;
-// Initialize the grid with random cells (0 = dead, 1 = alive)
+// Initialize the grid with random cells (0 = dead, 1 = alive) 1.  פונקציה createGrid - יצירת גריד התחלתי
 var createGrid = function () {
     var grid = [];
     for (var i = 0; i < gridHeight; i++) {
@@ -13,15 +13,15 @@ var createGrid = function () {
     }
     return grid;
 };
-// Print the grid to the console
+// Print the grid to the console הדפסת הגריד לקונסולה
 var printGrid = function (grid) {
     console.clear();
     grid.forEach(function (row) {
-        console.log(row.map(function (cell) { return (cell ? 'O' : '.'); }).join(' '));
+        console.log(row.map(function (cell) { return (cell ? "O" : "."); }).join(" "));
     });
-    console.log('\n');
+    console.log("\n");
 };
-// Get the number of live neighbors of a given cell
+// Get the number of live neighbors of a given cell הפונקציה getLiveNeighbors מחשבת את מספר השכנים החיים (תאים חיים) של תא נתון בגריד.
 var getLiveNeighbors = function (grid, row, col) {
     var liveNeighbors = 0;
     for (var i = -1; i <= 1; i++) {
@@ -30,14 +30,17 @@ var getLiveNeighbors = function (grid, row, col) {
                 continue; // Skip the current cell
             var newRow = row + i;
             var newCol = col + j;
-            if (newRow >= 0 && newRow < gridHeight && newCol >= 0 && newCol < gridWidth) {
+            if (newRow >= 0 &&
+                newRow < gridHeight &&
+                newCol >= 0 &&
+                newCol < gridWidth) {
                 liveNeighbors += grid[newRow][newCol];
             }
         }
     }
     return liveNeighbors;
 };
-// Compute the next generation of the grid
+// Compute the next generation of the grid   חישוב הדור הבא
 var nextGeneration = function (grid) {
     var newGrid = grid.map(function (row, rowIndex) {
         return row.map(function (cell, colIndex) {
